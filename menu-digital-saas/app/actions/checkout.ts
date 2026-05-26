@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { Prisma } from "@prisma/client";
+import Decimal from "decimal.js";
 import { MercadoPagoConfig, Preference } from "mercadopago";
 
 // ── Checkout Form Schema ──
@@ -70,14 +70,14 @@ export async function processOrder(formData: FormData) {
     userId = null;
   }
 
-  let subtotal = new Prisma.Decimal(0);
+  let subtotal = new Decimal(0);
   const orderItemsData: Array<{
     productId: string;
     productName: string;
-    unitPrice: Prisma.Decimal;
-    totalPrice: Prisma.Decimal;
+    unitPrice: Decimal;
+    totalPrice: Decimal;
     specialNotes?: string;
-    selectedOptions: Array<{ optionId: string; priceAtOrder: Prisma.Decimal }>;
+    selectedOptions: Array<{ optionId: string; priceAtOrder: Decimal }>;
   }> = [];
 
   for (const item of items) {
@@ -90,7 +90,7 @@ export async function processOrder(formData: FormData) {
       return { error: { _form: [`Producto "${item.productName}" no encontrado`] } };
     }
 
-    let itemTotal = product.basePrice;
+    let itemTotal = new Decimal(product.basePrice.toString());
 
     if (item.selections) {
       for (const [groupId, optionIds] of Object.entries(item.selections)) {
@@ -106,7 +106,7 @@ export async function processOrder(formData: FormData) {
           if (!option || !option.isAvailable) {
             return { error: { _form: [`Opción "${optionId}" no disponible`] } };
           }
-          itemTotal = itemTotal.plus(option.priceModifier);
+          itemTotal = itemTotal.plus(new Decimal(option.priceModifier.toString()));
         }
       }
     }
@@ -116,15 +116,15 @@ export async function processOrder(formData: FormData) {
 
     subtotal = subtotal.plus(totalPrice);
 
-    const selectedOptions: Array<{ optionId: string; priceAtOrder: Prisma.Decimal }> = [];
+    const selectedOptions: Array<{ optionId: string; priceAtOrder: Decimal }> = [];
     if (item.selections) {
       for (const optionIds of Object.values(item.selections)) {
         for (const optionId of optionIds) {
-          let price = new Prisma.Decimal(0);
+          let price = new Decimal(0);
           for (const group of product.optionGroups) {
             const opt = group.options.find((o) => o.id === optionId);
             if (opt) {
-              price = opt.priceModifier;
+              price = new Decimal(opt.priceModifier.toString());
               break;
             }
           }

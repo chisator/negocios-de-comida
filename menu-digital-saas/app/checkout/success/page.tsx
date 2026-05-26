@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Clock, MessageCircle } from "lucide-react";
 
-export default function CheckoutSuccessPage() {
+function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const method = searchParams.get("method");
@@ -54,5 +54,19 @@ export default function CheckoutSuccessPage() {
         Volver al inicio
       </Link>
     </div>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#11BEE8] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   );
 }

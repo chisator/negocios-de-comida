@@ -4,14 +4,14 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Clock, MessageCircle } from "lucide-react";
 
-export default function ShopCheckoutSuccessPage() {
+function ShopSuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const method = searchParams.get("method");
   const status = searchParams.get("status");
   const paymentId = searchParams.get("payment_id");
 
-  const isApproved = status === "approved" || paymentId;
+  const isApproved = status === "approved" || !!paymentId;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-6 text-center">
@@ -64,5 +64,19 @@ export default function ShopCheckoutSuccessPage() {
         Volver al inicio
       </Link>
     </div>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function ShopCheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#11BEE8] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <ShopSuccessContent />
+    </Suspense>
   );
 }
